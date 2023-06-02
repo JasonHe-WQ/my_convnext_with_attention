@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, Dataset
 from PIL import Image
 from timm import create_model
 import os
+import numpy as np
 
 torch.set_float32_matmul_precision('high')
 
@@ -67,6 +68,8 @@ model.to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
+
+past_losses = []
 # 4. 在训练数据上训练模型
 for epoch in range(1000):  # 迭代1000轮
     for images, labels in train_loader:
@@ -77,7 +80,24 @@ for epoch in range(1000):  # 迭代1000轮
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        # 每10个epoch，保存模型参数
+        if epoch % 10 == 9:
+            torch.save(model.state_dict(), f'./model_{epoch + 1}.pth')
 
+        # 如果past_losses列表已满，删除最旧的损失
+        if len(past_losses) >= 5:
+            past_losses.pop(0)
+
+        # 将当前损失添加到past_losses列表
+        past_losses.append(loss.item())
+
+        # 如果past_losses列表已满，检查当前损失是否大于过去5个epoch的平均损失加3倍标准差
+        if len(past_losses) == 5:
+            mean_loss = np.mean(past_losses)
+            std_loss = np.std(past_losses)
+            if loss.item() > mean_loss + 3 * std_loss:
+                if epoch >= 10:  # 确保有一个先前的模型状态可供加载
+                    model.load_state_dict(torch.load(f'./model_{epoch - 10 + 1}.pth'))
     print(f'Epoch {epoch + 1}, Loss: {loss.item()}')
 
 # 5. 对模型进行评估
