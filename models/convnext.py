@@ -148,9 +148,3 @@ def convnext_small(pretrained=False,in_22k=False, **kwargs):
 def convnext_base(pretrained=False, in_22k=False, **kwargs):
     model = ConvNeXt(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024], **kwargs)
     return model
-
-# input = torch.randn(1, 3, 224, 224)
-# print("Input shape: {}".format(input.shape))
-# model = convnext_base(in_chans=3, pretrained=True)
-# output = model(input)
-# print("Output shape: {}".format(output.shape))

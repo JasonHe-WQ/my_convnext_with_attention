@@ -6,6 +6,8 @@ from PIL import Image
 from timm import create_model
 import os
 
+torch.set_float32_matmul_precision('high')
+
 
 # 1. 准备数据集
 class MyDataset(Dataset):
@@ -48,14 +50,15 @@ transform = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # Normalize image
 ])
 
-train_dataset = MyDataset("/home/convnext/train", transform=transform)
-test_dataset = MyDataset("/home/convnext/test", transform=transform)
+train_dataset = MyDataset("./train", transform=transform)
+test_dataset = MyDataset("./test", transform=transform)
 
 train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
 # 2. 创建模型实例
 model = create_model('convnext_base', num_classes=7)
+model = torch.compile(model)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
@@ -65,7 +68,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # 4. 在训练数据上训练模型
-for epoch in range(100):  # 迭代100轮
+for epoch in range(1000):  # 迭代1000轮
     for images, labels in train_loader:
         images, labels = images.to(device), labels.to(device)
         outputs = model(images)
