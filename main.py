@@ -61,7 +61,7 @@ test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 model = create_model('convnext_base', num_classes=7)
 model = torch.compile(model)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda")
 model.to(device)
 
 # 3. 定义损失函数和优化器
@@ -82,7 +82,7 @@ for epoch in range(1000):  # 迭代1000轮
         optimizer.step()
         # 每10个epoch，保存模型参数
         if epoch % 10 == 9:
-            torch.save(model.state_dict(),  f'./pthlib/model_{epoch+1}.pth')
+            torch.save(model.state_dict(),f'./pthlib/model_{epoch+1}.pth')
 
         # 如果past_losses列表已满，删除最旧的损失
         if len(past_losses) >= 5:

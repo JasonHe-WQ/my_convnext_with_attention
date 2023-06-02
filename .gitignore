@@ -1,3 +1,4 @@
 *.pth
-
+./.idea
+./model/__pycache__
 !model_1000.pth
