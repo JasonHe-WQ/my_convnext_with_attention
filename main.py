@@ -82,7 +82,7 @@ for epoch in range(1000):  # 迭代1000轮
         optimizer.step()
         # 每10个epoch，保存模型参数
         if epoch % 10 == 9:
-            torch.save(model.state_dict(), f'./model_{epoch + 1}.pth')
+            torch.save(model.state_dict(),  f'./pthlib/model_{epoch+1}.pth')
 
         # 如果past_losses列表已满，删除最旧的损失
         if len(past_losses) >= 5:
@@ -97,7 +97,7 @@ for epoch in range(1000):  # 迭代1000轮
             std_loss = np.std(past_losses)
             if loss.item() > mean_loss + 3 * std_loss:
                 if epoch >= 10:  # 确保有一个先前的模型状态可供加载
-                    model.load_state_dict(torch.load(f'./model_{epoch - 10 + 1}.pth'))
+                    model.load_state_dict(torch.load(f'./pthlib/model_{epoch-10+1}.pth'))
     print(f'Epoch {epoch + 1}, Loss: {loss.item()}')
 
 # 5. 对模型进行评估

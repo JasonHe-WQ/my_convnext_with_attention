@@ -1,0 +1,3 @@
+*.pth
+
+!model_1000.pth
