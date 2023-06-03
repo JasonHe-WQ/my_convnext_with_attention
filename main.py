@@ -6,6 +6,7 @@ from PIL import Image
 from timm import create_model
 import os
 import numpy as np
+import time
 
 torch.set_float32_matmul_precision('high')
 
@@ -59,7 +60,7 @@ test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
 # 2. 创建模型实例
 model = create_model('convnext_base', num_classes=7)
-model = torch.compile(model)
+# model = torch.compile(model)
 
 device = torch.device("cuda")
 model.to(device)
@@ -72,6 +73,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 past_losses = []
 # 4. 在训练数据上训练模型
 for epoch in range(1000):  # 迭代1000轮
+    if epoch % 100 == 0:
+        start_time = time.time()
     for images, labels in train_loader:
         images, labels = images.to(device), labels.to(device)
         outputs = model(images)
@@ -80,8 +83,8 @@ for epoch in range(1000):  # 迭代1000轮
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        # 每10个epoch，保存模型参数
-        if epoch % 10 == 9:
+        # 每100个epoch，保存模型参数
+        if epoch % 100 == 99:
             torch.save(model.state_dict(),f'./pthlib/model_{epoch+1}.pth')
 
         # 如果past_losses列表已满，删除最旧的损失
@@ -96,8 +99,12 @@ for epoch in range(1000):  # 迭代1000轮
             mean_loss = np.mean(past_losses)
             std_loss = np.std(past_losses)
             if loss.item() > mean_loss + 3 * std_loss:
-                if epoch >= 10:  # 确保有一个先前的模型状态可供加载
+                if epoch >= 100:  # 确保有一个先前的模型状态可供加载
                     model.load_state_dict(torch.load(f'./pthlib/model_{epoch-10+1}.pth'))
+        if epoch % 100 == 99:
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print(f'Time elapsed for 100 epochs: {elapsed_time} seconds.')
     print(f'Epoch {epoch + 1}, Loss: {loss.item()}')
 
 # 5. 对模型进行评估
