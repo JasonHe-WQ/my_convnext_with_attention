@@ -60,7 +60,7 @@ test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
 # 2. 创建模型实例
 model = create_model('convnext_base', num_classes=7)
-# model = torch.compile(model)
+model = torch.compile(model)
 
 device = torch.device("cuda")
 model.to(device)
