@@ -7,6 +7,7 @@ from timm import create_model
 import os
 import numpy as np
 import time
+import json
 
 torch.set_float32_matmul_precision('high')
 
@@ -71,6 +72,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 
 past_losses = []
+losses_record = {}  # 新增，用于记录loss
 # 4. 在训练数据上训练模型
 for epoch in range(1000):  # 迭代1000轮
     if epoch % 100 == 0:
@@ -94,6 +96,9 @@ for epoch in range(1000):  # 迭代1000轮
         # 将当前损失添加到past_losses列表
         past_losses.append(loss.item())
 
+        if epoch % 10 == 9:
+            losses_record[epoch + 1] = loss.item()
+
         # 如果past_losses列表已满，检查当前损失是否大于过去5个epoch的平均损失加3倍标准差
         if len(past_losses) == 5:
             mean_loss = np.mean(past_losses)
@@ -106,6 +111,9 @@ for epoch in range(1000):  # 迭代1000轮
             elapsed_time = end_time - start_time
             print(f'Time elapsed for 100 epochs: {elapsed_time} seconds.')
     print(f'Epoch {epoch + 1}, Loss: {loss.item()}')
+
+with open("./train/losses_record.json", 'w') as f:
+    json.dump(losses_record, f)
 
 # 5. 对模型进行评估
 model.eval()
