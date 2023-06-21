@@ -14,6 +14,7 @@ transform = transforms.Compose([
 
 # 创建模型并加载权重
 model = create_model('convnext_xlarge', num_classes=7)
+model = torch.compile(model)
 model.load_state_dict(torch.load('./pthlib/best_model.pth'))  # 加载最后保存的权重文件
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
