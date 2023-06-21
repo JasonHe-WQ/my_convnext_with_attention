@@ -1,6 +1,3 @@
 ./pthlib/
 ./.idea/
 ./model/__pycache__/
-./cur/
-./jud/
-!./pthlib/model_1000.pth

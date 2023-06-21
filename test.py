@@ -13,10 +13,10 @@ transform = transforms.Compose([
 ])
 
 # 创建模型并加载权重
-model = create_model('convnext_base', num_classes=7)
-model.load_state_dict(torch.load('./pthlib/model_1000.pth'))  # 加载最后保存的权重文件
+model = create_model('convnext_xlarge', num_classes=7)
+model.load_state_dict(torch.load('./pthlib/best_model.pth'))  # 加载最后保存的权重文件
 
-device = torch.device("cuda")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 model.eval()
 
@@ -31,16 +31,39 @@ int_to_class = {
     6: "err6"
 }
 
+# 获取图片列表
+image_list = os.listdir('./cur')
+
+# 创建数据集和数据加载器
+class CustomDataset(torch.utils.data.Dataset):
+    def __init__(self, img_names, transform=None):
+        self.img_names = img_names
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.img_names)
+
+    def __getitem__(self, idx):
+        img_name = self.img_names[idx]
+        img_path = os.path.join('./cur', img_name)
+        image = Image.open(img_path)
+        if self.transform:
+            image = self.transform(image)
+        return img_name, image
+
+dataset = CustomDataset(image_list, transform=transform)
+data_loader = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=False)
+
 # 进行预测并保存结果
 results = {}
-for img_name in os.listdir('./cur'):
-    img_path = os.path.join('./cur', img_name)
-    img = Image.open(img_path)
-    img = transform(img).unsqueeze(0).to(device)
-    with torch.no_grad():
-        outputs = model(img)
+with torch.no_grad():
+    for batch in data_loader:
+        img_names, images = batch
+        images = images.to(device)
+        outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
-        results[img_name] = int_to_class[predicted.item()]
+        for img_name, pred in zip(img_names, predicted):
+            results[img_name] = int_to_class[pred.item()]
 
 # 将结果保存到 json 文件
 with open('./jud/results.json', 'w') as f:

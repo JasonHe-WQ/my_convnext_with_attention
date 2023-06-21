@@ -145,6 +145,6 @@ def convnext_small(pretrained=False,in_22k=False, **kwargs):
     return model
 
 @register_model
-def convnext_base(pretrained=False, in_22k=False, **kwargs):
-    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[128, 256, 512, 1024], **kwargs)
+def convnext_xlarge(pretrained=False, in_22k=False, **kwargs):
+    model = ConvNeXt(depths=[3, 3, 27, 3], dims=[256, 512, 1024, 2048], **kwargs)
     return model
