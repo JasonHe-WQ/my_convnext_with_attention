@@ -5,6 +5,8 @@ from PIL import Image
 import os
 import json
 
+torch.set_float32_matmul_precision('high')
+
 # 数据预处理
 transform = transforms.Compose([
     transforms.Resize((224, 224)),  # Resize image to 224x224
@@ -14,6 +16,7 @@ transform = transforms.Compose([
 
 # 创建模型并加载权重
 model = create_model('convnext_xlarge', num_classes=7)
+model = torch.compile(model)
 model.load_state_dict(torch.load('./pthlib/best_model.pth'))  # 加载最后保存的权重文件
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
